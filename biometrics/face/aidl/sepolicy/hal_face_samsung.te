@@ -1,0 +1,47 @@
+# Samsung AIDL face HAL wrapper service.  Binds the proprietary
+# ISehBiometricsFace@2.0 HIDL HAL and exposes AIDL IFace/default to
+# the framework.  Inherits the standard hal_face_server attribute so
+# the framework-side keystore / biometric_service wiring works, and
+# additionally gets everything the existing hal_face_default domain
+# had (camera, gralloc, gatekeeper, teetz TA paths) because we run
+# in place of / alongside that domain.
+
+type hal_face_samsung, domain;
+type hal_face_samsung_exec, vendor_file_type, exec_type, file_type;
+
+# Service type for the vendor.lineageos.samsung.face.IFacePreviewTap
+# AIDL that hal_face_samsung hosts alongside the IFace/default HAL.
+type face_preview_tap_service, service_manager_type;
+
+init_daemon_domain(hal_face_samsung)
+hal_server_domain(hal_face_samsung, hal_face)
+
+# Register the preview-tap service.
+allow hal_face_samsung face_preview_tap_service:service_manager add;
+
+# android-base LOG() output to logcat.  Standard HAL services need
+# this on user builds too so bug reports and tombstones from the
+# face HAL actually surface — don't gate behind userdebug_or_eng.
+allow hal_face_samsung logd:unix_stream_socket connectto;
+allow hal_face_samsung logdw_socket:sock_file write;
+
+# We are the AIDL face service — priv-apps and system_server discover
+# us via `android.hardware.biometrics.face.IFace/default` registered
+# in the service manager.
+
+# HIDL client: bind the proprietary Samsung @2.0 face HAL.
+hwbinder_use(hal_face_samsung)
+allow hal_face_samsung hal_face_seh_hwservice:hwservice_manager find;
+binder_call(hal_face_samsung, hal_face_default)
+binder_call(hal_face_default, hal_face_samsung)
+
+# Preview frames arrive as hidl_memory handles backed by ashmem.
+# We need to (a) call the HIDL allocator service and (b) accept fds
+# that hal_allocator_default minted on behalf of the proprietary
+# face HAL (which lives in hal_face_default).  Without the fd:use
+# rule, sehOnPreviewFrame transactions fail with FAILED_TRANSACTION
+# and the proprietary HIDL service aborts with `Failed HIDL return
+# status not checked' inside its onPreviewUpdated callback.
+allow hal_face_samsung hal_allocator:binder { call transfer };
+allow hal_face_samsung hal_allocator:fd use;
+allow hal_face_samsung hal_face_default:fd use;

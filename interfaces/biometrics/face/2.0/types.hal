@@ -1,0 +1,37 @@
+/*
+ * SPDX-FileCopyrightText: 2026 The LineageOS Project
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package vendor.samsung.hardware.biometrics.face@2.0;
+
+/**
+ * Vendor TA-side policy tier.  The placeholder set below is
+ * sufficient for hidl-gen; the ABI only depends on the underlying
+ * uint32_t width.
+ */
+enum SehSecurityLevel : uint32_t {
+    LOW = 0,
+    MEDIUM = 1,
+    HIGH = 2,
+};
+
+/**
+ * Identifier of a per-face metadata slot ("face tag") stored
+ * alongside the template in the TA.  Used to attach a human-readable
+ * name and a few auxiliary properties to each face_id.  Placeholder
+ * enumerators — precise semantics are not required for the preview
+ * use-case this interface is needed for.
+ */
+enum SehFaceTagID : uint32_t {
+    NAME = 0,
+    METADATA = 1,
+};
+
+/**
+ * Payload associated with a SehFaceTagID — a struct containing one
+ * embedded hidl_vec, i.e. a single opaque byte array.
+ */
+struct SehFaceTag {
+    vec<uint8_t> data;
+};

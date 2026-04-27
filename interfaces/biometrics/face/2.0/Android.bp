@@ -1,0 +1,20 @@
+//
+// Copyright (C) 2026 The LineageOS Project
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+hidl_interface {
+    name: "vendor.samsung.hardware.biometrics.face@2.0",
+    root: "vendor.samsung.hardware.biometrics",
+    srcs: [
+        "types.hal",
+        "ISehBiometricsFace.hal",
+        "ISehBiometricsFaceClientCallback.hal",
+    ],
+    interfaces: [
+        "android.hardware.biometrics.face@1.0",
+        "android.hidl.base@1.0",
+    ],
+    gen_java: false,
+}

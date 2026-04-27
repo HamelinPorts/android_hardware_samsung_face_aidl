@@ -1,0 +1,38 @@
+//
+// Copyright (C) 2026 The LineageOS Project
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+aidl_interface {
+    name: "vendor.lineageos.samsung.face",
+    owner: "lineage",
+    vendor_available: true,
+    // The preview tap crosses the system/vendor boundary: our HAL
+    // service lives on /vendor and its clients (SettingsGta8 etc.)
+    // live on /system_ext.  Cross-partition AIDL interfaces must
+    // declare vintf stability so the binder runtime doesn't reject
+    // the cross-stability binder references on registerListener.
+    stability: "vintf",
+    srcs: ["vendor/lineageos/samsung/face/*.aidl"],
+    backend: {
+        cpp: {
+            enabled: false,
+        },
+        java: {
+            sdk_version: "module_current",
+            apex_available: ["//apex_available:platform"],
+        },
+        ndk: {
+            enabled: true,
+        },
+    },
+    frozen: true,
+    versions_with_info: [
+        {
+            version: "1",
+            imports: [],
+        },
+    ],
+
+}

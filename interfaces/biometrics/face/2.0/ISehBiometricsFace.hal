@@ -1,0 +1,87 @@
+/*
+ * SPDX-FileCopyrightText: 2026 The LineageOS Project
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package vendor.samsung.hardware.biometrics.face@2.0;
+
+import android.hardware.biometrics.face@1.0::IBiometricsFace;
+import android.hardware.biometrics.face@1.0::OptionalUint64;
+import android.hardware.biometrics.face@1.0::Status;
+import ISehBiometricsFaceClientCallback;
+
+/**
+ * Vendor 2.0 extension of the standard 1.0 face HAL used by some
+ * Samsung devices.  Adds Trusty-TA lifecycle management,
+ * preview-surface plumbing, a per-face-id "tag" store, and an
+ * enhanced authenticate path carrying a vendor-specific token.
+ *
+ * Method declaration order matters: codes 1..14 come from the
+ * inherited @1.0 interface; the 20 methods declared below are
+ * codes 15..34 in the order written.  Reordering breaks wire
+ * compatibility with the vendor service binary — the face HAL
+ * will start but every call lands on the wrong method.
+ */
+interface ISehBiometricsFace extends @1.0::IBiometricsFace {
+    /**
+     * Register a vendor-extended callback.  Independent of the
+     * base 1.0 setCallback slot: the service keeps separate
+     * pointers so a base-callback registration is not disturbed.
+     */
+    sehSetCallback(ISehBiometricsFaceClientCallback clientCallback)
+        generates (OptionalUint64 result);
+
+    /**
+     * Authenticate like @1.0::authenticate, but scoped to a specific
+     * faceId and carrying a Samsung auth token.
+     */
+    sehAuthenticate(uint64_t operationId, int32_t faceId,
+                    vec<uint8_t> token) generates (Status status);
+
+    sehOpenTaSession() generates (Status status);
+    sehCloseTaSession() generates (Status status);
+    sehIsTaSessionClosed() generates (bool closed);
+
+    sehPauseEnrollment() generates (Status status);
+    sehResumeEnrollment() generates (Status status);
+
+    sehGetTaInfo() generates (string info);
+    sehGetEngineVersion() generates (string version);
+
+    /**
+     * Inform the TA about the physical orientation of the sensor.
+     */
+    sehSetRotation(uint32_t rotation) generates (Status status);
+
+    /**
+     * Chunked install of an updated face TA binary.  Prepare → (N×
+     * InstallChunk) → Finish.  The preview use-case never invokes
+     * these, but they must remain at codes 25..27 for correct
+     * transaction dispatch.
+     */
+    sehPrepareTaInstallation() generates (Status status);
+    sehInstallTaDataChunk(memory chunk) generates (Status status);
+    sehFinishTaInstallation(vec<uint8_t> data) generates (Status status);
+
+    /**
+     * Turn preview frame delivery on (mode=1) or off (mode=0).  The
+     * `config` blob is vendor-private; an empty vec is accepted by
+     * the vendor service and yields the default camera configuration.
+     */
+    sehConfigurePreview(uint32_t mode, vec<uint8_t> config)
+        generates (Status status);
+
+    sehGetServicePid() generates (uint32_t pid);
+
+    sehGetSecurityLevel()
+        generates (Status status, SehSecurityLevel level);
+    sehSetSecurityLevel(SehSecurityLevel level)
+        generates (Status status);
+
+    sehGetFaceTagList()
+        generates (Status status, vec<SehFaceTagID> tags);
+    sehGetFaceTag(SehFaceTagID id)
+        generates (Status status, SehFaceTag tag);
+    sehSetFaceTag(SehFaceTagID id, vec<uint8_t> data)
+        generates (Status status);
+};

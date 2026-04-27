@@ -1,0 +1,20 @@
+//
+// Copyright (C) 2026 The LineageOS Project
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+android_library {
+    name: "SamsungFacePreviewClient",
+    platform_apis: true,
+    srcs: ["src/**/*.java"],
+    static_libs: [
+        "vendor.lineageos.samsung.face-V1-java",
+    ],
+    manifest: "AndroidManifest.xml",
+    installable: false,
+}

@@ -1,0 +1,54 @@
+/*
+ * SPDX-FileCopyrightText: 2026 The LineageOS Project
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+package vendor.samsung.hardware.biometrics.face@2.0;
+
+import android.hardware.biometrics.face@1.0::IBiometricsFaceClientCallback;
+
+/**
+ * Vendor extension of the 1.0 face client callback.  Adds three
+ * oneway callbacks used by the vendor preview UI:
+ *
+ *   - sehOnPreviewFrame:    delivers a raw camera frame (hidl_memory)
+ *                           to the client for on-screen rendering.
+ *   - sehOnPreviewUpdated:  delivers a compact detection-result blob
+ *                           (face bbox, landmarks, confidence).
+ *   - sehOnAuthenticated:   like the 1.0 onAuthenticated but carries
+ *                           a second token (the hardware auth token).
+ *
+ * Transaction-code ordering (in declaration order) is codes 8, 9,
+ * 10 — the inherited 7 methods from
+ * @1.0::IBiometricsFaceClientCallback occupy codes 1..7.  Re-ordering
+ * the declarations here moves the transaction codes and breaks wire
+ * compatibility with the vendor face HAL service.
+ */
+interface ISehBiometricsFaceClientCallback extends
+        @1.0::IBiometricsFaceClientCallback {
+    /**
+     * Periodic detection-result update, fired while a face is in
+     * view.  `data` is a vendor-internal feature/bbox blob.
+     */
+    oneway sehOnPreviewUpdated(vec<uint8_t> data, int32_t confidence,
+                               int32_t faceId, int32_t userId,
+                               uint32_t timestamp);
+
+    /**
+     * Enhanced onAuthenticated carrying both the framework token and
+     * the hardware auth token (HAT) produced by the vendor face TA.
+     */
+    oneway sehOnAuthenticated(uint64_t deviceId, uint32_t faceId,
+                              int32_t userId, vec<uint8_t> token,
+                              vec<uint8_t> hardwareAuthToken);
+
+    /**
+     * Live camera preview frame for the client to render.  `frame`
+     * is a shared-memory region holding one YUV image (format code
+     * from a vendor-internal set; typical values map to
+     * HAL_PIXEL_FORMAT_* NV21 / YCbCr_420_SP).  `stride` is the row
+     * stride of the Y plane.
+     */
+    oneway sehOnPreviewFrame(memory frame, int32_t width, int32_t height,
+                             int32_t format, uint32_t stride);
+};

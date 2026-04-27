@@ -1,0 +1,22 @@
+# SettingsGta8 (the Samsung-platform-signed priv-app) binds the
+# vendor preview-tap service to render face-enrollment preview frames
+# emitted by the Samsung face HAL.  Settings runs as system_app
+# domain on LOS 23.2 (system_ext_specific: true + platform
+# certificate).  Add per-domain rules for any future second consumer;
+# do not blanket-grant the platform_app domain.
+
+allow system_app face_preview_tap_service:service_manager find;
+binder_call(system_app, hal_face_samsung)
+binder_call(hal_face_samsung, system_app)
+
+# The preview frames arrive as ashmem fds whose origin label is
+# hal_face_default (the proprietary Samsung face HIDL HAL that
+# allocated the buffer).  Every domain that the fd traverses on its
+# way to Settings needs `fd:use` against that label, otherwise the
+# receiving process gets EACCES on read() of the binder-passed fd.
+allow system_app hal_face_default:fd use;
+allow system_app hal_allocator:fd use;
+# The underlying inode for a Samsung HIDL ashmem region (the
+# /dev/ashmem/AshmemAllocator_hidl path) is labeled `tmpfs`, so reading
+# the buffer also requires tmpfs:file perms in the receiving domain.
+allow system_app tmpfs:file { read getattr map };

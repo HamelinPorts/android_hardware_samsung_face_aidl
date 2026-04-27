@@ -1,0 +1,8 @@
+service vendor.face-hal-samsung /vendor/bin/hw/android.hardware.biometrics.face-service.samsung
+    class hal
+    user system
+    group system
+    capabilities SYS_NICE
+    task_profiles ServiceCapacityLow
+    interface aidl android.hardware.biometrics.face.IFace/default
+    interface aidl vendor.lineageos.samsung.face.IFacePreviewTap/default

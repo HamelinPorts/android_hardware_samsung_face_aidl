@@ -1,0 +1,56 @@
+//
+// Copyright (C) 2026 The LineageOS Project
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+// Samsung face HAL as an AIDL android.hardware.biometrics.face.IFace
+// service.  Under the hood it binds the proprietary Samsung HIDL HAL
+// (ISehBiometricsFace@2.0) and translates between the modern AIDL
+// framework-side protocol and Samsung's legacy HIDL channel.  This
+// lets us expose the @2.0 preview surface (sehOnPreviewFrame) via
+// AIDL's built-in `enroll(..., NativeHandle previewSurface)` API
+// without any frameworks/base patches.
+//
+
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+cc_binary {
+    name: "android.hardware.biometrics.face-service.samsung",
+    relative_install_path: "hw",
+    init_rc: ["face-samsung.rc"],
+    vintf_fragments: ["face-samsung.xml"],
+    vendor: true,
+    srcs: [
+        "main.cpp",
+        "SamsungFace.cpp",
+        "SamsungSession.cpp",
+        "HidlBackend.cpp",
+        "HidlCallbackBridge.cpp",
+        "FacePreviewTap.cpp",
+    ],
+    shared_libs: [
+        "libbase",
+        "libbinder_ndk",
+        "libhidlbase",
+        "liblog",
+        "libnativewindow",
+        "libutils",
+        // HIDL backend
+        "android.hardware.biometrics.face@1.0",
+        "vendor.samsung.hardware.biometrics.face@2.0",
+    ],
+    static_libs: [
+        "android.hardware.biometrics.face-V4-ndk",
+        "android.hardware.biometrics.common-V4-ndk",
+        "android.hardware.common-V2-ndk",
+        "android.hardware.keymaster-V4-ndk",
+        "vendor.lineageos.samsung.face-V1-ndk",
+    ],
+    cflags: [
+        "-Wall",
+        "-Werror",
+        "-Wno-unused-parameter",
+    ],
+}

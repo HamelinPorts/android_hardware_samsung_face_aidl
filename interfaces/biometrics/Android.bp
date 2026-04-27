@@ -1,0 +1,14 @@
+// SPDX-FileCopyrightText: 2026 The LineageOS Project
+// SPDX-License-Identifier: Apache-2.0
+
+// More-specific hidl_package_root for the face HIDL @2.0 interface
+// definitions Samsung extends on top of android.hardware.biometrics.face@1.0.
+//
+// LineageOS/android_hardware_samsung already declares the broader
+// `vendor.samsung.hardware` root for radio @1.2.  Declaring this longer
+// prefix here lets hidl-gen resolve `vendor.samsung.hardware.biometrics.*`
+// inside this repo without forking hardware/samsung; longest-prefix wins.
+hidl_package_root {
+    name: "vendor.samsung.hardware.biometrics",
+    use_current: true,
+}
